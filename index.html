@@ -617,7 +617,8 @@ function renderReviews() {
   }
   container.innerHTML = reviews.map(r => {
     const color = r.status==='green'?'var(--green)':r.status==='amber'?'var(--amber)':'var(--red)';
-    const pageLabel = r.page_number > 1 ? `Page ${r.page_number}` : 'Full Surah';
+    const surahPages = appData.pages.filter(p=>p.surah_id===r.surah_id);
+    const pageLabel = surahPages.length === 1 ? 'Full Surah' : `Page ${r.page_number}`;
     return `
       <div class="review-item" id="ri-${r.surah_id}-${r.page_number}">
         <div class="review-dot" style="background:${color}"></div>
