@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hifdh Coach</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1612;
+  --parchment: #f5f0e8;
+  --gold: #c9a84c;
+  --gold-light: #e8d5a3;
+  --gold-dark: #8b6914;
+  --green: #2d5a3d;
+  --green-light: #e8f4ec;
+  --amber: #c97c2a;
+  --amber-light: #fdf0e0;
+  --red: #8b2a2a;
+  --red-light: #fdeaea;
+  --familiar: #2a5c8b;
+  --familiar-light: #e0edfb;
+  --muted: #7a7065;
+  --border: #d4c9b0;
+  --shadow: rgba(26,22,18,0.12);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--parchment);
+  color: var(--ink);
+  font-family: 'Cormorant Garamond', serif;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse at 15% 15%, rgba(201,168,76,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 85%, rgba(45,90,61,0.05) 0%, transparent 55%);
+}
+
+/* LOADING */
+.loading-screen {
+  position: fixed; inset: 0;
+  background: var(--ink);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 999;
+  transition: opacity 0.6s ease;
+}
+.loading-screen.hidden { opacity: 0; pointer-events: none; }
+.loading-arabic {
+  font-family: 'Amiri', serif;
+  font-size: 3rem;
+  color: var(--gold);
+  margin-bottom: 16px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.loading-text {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+@keyframes pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
+
+/* HEADER */
+.header {
+  background: var(--ink);
+  color: var(--parchment);
+  padding: 20px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--gold);
+  position: sticky; top: 0; z-index: 100;
+}
+.header-left h1 {
+  font-family: 'Amiri', serif;
+  font-size: 1.7rem;
+  color: var(--gold-light);
+  font-weight: 400;
+}
+.header-left .subtitle {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.header-right { display:flex; align-items:center; gap:20px; }
+.streak-badge {
+  background: rgba(201,168,76,0.12);
+  border: 1px solid var(--gold-dark);
+  border-radius: 8px;
+  padding: 8px 16px;
+  text-align: center;
+}
+.streak-number { font-family:'DM Mono',monospace; font-size:1.5rem; color:var(--gold); line-height:1; }
+.streak-label { font-family:'DM Mono',monospace; font-size:0.6rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; }
+.clock { font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--muted); line-height:1.7; text-align:right; }
+.clock .time { color:var(--gold); font-size:0.9rem; }
+
+/* NAV */
+.nav {
+  background: var(--ink);
+  padding: 0 32px;
+  display: flex;
+  border-bottom: 1px solid #2a2520;
+  overflow-x: auto;
+}
+.nav-btn {
+  padding: 11px 18px;
+  background: none; border: none;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.nav-btn:hover { color: var(--gold-light); }
+.nav-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* MAIN */
+.main { max-width: 860px; margin: 0 auto; padding: 28px 20px; }
+
+/* PAGES */
+.page { display:none; }
+.page.active { display:block; }
+
+/* SECTION TITLE */
+.section-title {
+  font-family: 'Amiri', serif;
+  font-size: 1.35rem;
+  color: var(--ink);
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.section-title .arabic { font-size:1.05rem; color:var(--gold-dark); direction:rtl; }
+
+/* TODAY HIGHLIGHT */
+.today-highlight {
+  background: linear-gradient(135deg, #fffbf0, white);
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 14px;
+}
+.today-icon { font-size: 1.8rem; }
+.today-text h3 { font-family:'Amiri',serif; font-size:1.15rem; }
+.today-text p { font-size:0.85rem; color:var(--muted); margin-top:3px; font-style:italic; }
+
+/* SESSION CARD */
+.session-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px var(--shadow);
+  margin-bottom: 24px;
+}
+.session-header {
+  background: var(--ink);
+  padding: 16px 22px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.session-header h2 { font-family:'Amiri',serif; font-size:1.15rem; color:var(--gold-light); font-weight:400; }
+.session-timer { font-family:'DM Mono',monospace; font-size:1.4rem; color:var(--gold); letter-spacing:0.05em; }
+.session-body { padding: 20px; }
+
+/* TASKS */
+.task-block {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 16px;
+  border-radius: 8px; margin-bottom: 10px;
+  border: 1px solid var(--border);
+  background: var(--parchment);
+  transition: all 0.2s; cursor: pointer;
+}
+.task-block:hover { border-color:var(--gold); background:var(--amber-light); }
+.task-block.completed { opacity:0.55; background:var(--green-light); border-color:var(--green); }
+.task-num {
+  font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--muted);
+  background:var(--border); width:22px; height:22px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;
+}
+.task-content { flex:1; }
+.task-title { font-size:1rem; font-weight:600; color:var(--ink); margin-bottom:3px; }
+.task-desc { font-size:0.85rem; color:var(--muted); font-style:italic; line-height:1.5; }
+.task-dur {
+  font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--gold-dark);
+  background:var(--gold-light); padding:3px 7px; border-radius:4px;
+  white-space:nowrap; align-self:flex-start; margin-top:2px;
+}
+.task-check {
+  width:18px; height:18px; border:2px solid var(--border); border-radius:4px;
+  flex-shrink:0; margin-top:3px; display:flex; align-items:center; justify-content:center;
+  transition:all 0.2s;
+}
+.task-block.completed .task-check { background:var(--green); border-color:var(--green); }
+
+/* REP COUNTER */
+.rep-counter {
+  display: flex; align-items: center; gap: 12px;
+  background: white; border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 16px; margin: 4px 0 12px;
+}
+.rep-btn {
+  width:30px; height:30px; border-radius:50%;
+  border:1px solid var(--gold); background:var(--gold-light);
+  color:var(--gold-dark); font-size:1.1rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:all 0.15s; flex-shrink:0;
+}
+.rep-btn:hover { background:var(--gold); color:white; }
+.rep-count { font-family:'DM Mono',monospace; font-size:1.2rem; color:var(--ink); min-width:38px; text-align:center; }
+.rep-label { font-size:0.82rem; color:var(--muted); flex:1; line-height:1.4; }
+.rep-target { font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--gold-dark); }
+
+/* POSITION TRACKER */
+.position-tracker {
+  background: linear-gradient(135deg, var(--familiar-light), white);
+  border: 1px solid var(--familiar);
+  border-radius: 8px; padding: 14px 18px; margin-bottom: 12px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.position-info { flex:1; }
+.position-label { font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:4px; }
+.position-value { font-size:1.05rem; font-weight:600; color:var(--familiar); }
+.position-inputs { display:flex; gap:8px; }
+.pos-input {
+  width:70px; padding:6px 10px;
+  border:1px solid var(--border); border-radius:6px;
+  font-family:'DM Mono',monospace; font-size:0.85rem;
+  background:white; text-align:center;
+}
+.save-pos-btn {
+  padding:6px 14px; background:var(--familiar); color:white;
+  border:none; border-radius:6px; cursor:pointer;
+  font-family:'DM Mono',monospace; font-size:0.72rem;
+  transition:all 0.15s;
+}
+.save-pos-btn:hover { background:#1a4a7a; }
+
+/* START BUTTON */
+.start-btn {
+  width:100%; padding:13px;
+  background:var(--green); color:white; border:none;
+  border-radius:8px; font-family:'Cormorant Garamond',serif;
+  font-size:1.05rem; cursor:pointer; transition:all 0.2s;
+  margin-top:6px; letter-spacing:0.05em;
+}
+.start-btn:hover { background:#1e3d2a; }
+.start-btn.active { background:var(--red); }
+
+/* STATS */
+.stats-row {
+  display: grid; grid-template-columns: repeat(4,1fr); gap:10px; margin-bottom:24px;
+}
+.stat-card {
+  background:white; border:1px solid var(--border); border-radius:10px;
+  padding:14px; text-align:center; box-shadow:0 1px 5px var(--shadow);
+}
+.stat-number { font-family:'DM Mono',monospace; font-size:1.7rem; color:var(--gold-dark); line-height:1; margin-bottom:4px; }
+.stat-label { font-size:0.7rem; color:var(--muted); font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:0.06em; }
+
+/* REVIEW LIST */
+.review-list {
+  background: white; border:1px solid var(--border); border-radius:10px;
+  overflow:hidden; margin-bottom:24px; box-shadow:0 1px 5px var(--shadow);
+}
+.review-list-header {
+  background:var(--ink); padding:12px 18px;
+  font-family:'Amiri',serif; font-size:1.05rem; color:var(--gold-light);
+}
+.review-item {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 18px; border-bottom:1px solid var(--border);
+  transition:background 0.15s;
+}
+.review-item:last-child { border-bottom:none; }
+.review-item:hover { background:var(--parchment); }
+.review-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.review-name { flex:1; font-size:0.95rem; }
+.review-page { font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--muted); }
+.review-status-btns { display:flex; gap:6px; }
+.rsb {
+  padding:4px 10px; border-radius:5px; border:1px solid;
+  font-family:'DM Mono',monospace; font-size:0.62rem; cursor:pointer;
+  transition:all 0.15s; letter-spacing:0.04em;
+}
+.rsb-green { background:var(--green-light); color:var(--green); border-color:var(--green); }
+.rsb-green:hover { background:var(--green); color:white; }
+.rsb-amber { background:var(--amber-light); color:var(--amber); border-color:var(--amber); }
+.rsb-amber:hover { background:var(--amber); color:white; }
+.rsb-red { background:var(--red-light); color:var(--red); border-color:var(--red); }
+.rsb-red:hover { background:var(--red); color:white; }
+
+/* PROGRESS */
+.progress-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px; margin-bottom:24px; }
+.surah-card {
+  background:white; border:1px solid var(--border); border-radius:10px;
+  padding:16px; box-shadow:0 1px 5px var(--shadow);
+  cursor:pointer; transition:all 0.2s;
+}
+.surah-card:hover { border-color:var(--gold); transform:translateY(-2px); box-shadow:0 4px 14px var(--shadow); }
+.surah-card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+.surah-name { font-family:'Amiri',serif; font-size:1.1rem; }
+.surah-arabic { font-family:'Amiri',serif; font-size:1.05rem; color:var(--gold-dark); direction:rtl; }
+.surah-meta { font-family:'DM Mono',monospace; font-size:0.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:8px; }
+.progress-bar-wrap { background:var(--border); border-radius:4px; height:5px; overflow:hidden; margin-bottom:6px; }
+.progress-bar-fill { height:100%; border-radius:4px; transition:width 0.5s ease; }
+.status-dots { display:flex; gap:3px; flex-wrap:wrap; margin-top:6px; }
+.dot { width:9px; height:9px; border-radius:50%; cursor:pointer; transition:transform 0.15s; }
+.dot:hover { transform:scale(1.5); }
+.dot-green { background:var(--green); }
+.dot-amber { background:var(--amber); }
+.dot-red { background:var(--red); }
+.dot-familiar { background:var(--familiar); }
+.dot-empty { background:var(--border); }
+
+/* LEGEND */
+.legend { display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
+.legend-item { display:flex; align-items:center; gap:6px; font-size:0.78rem; color:var(--muted); font-family:'DM Mono',monospace; }
+.legend-dot { width:9px; height:9px; border-radius:50%; }
+
+/* MODAL */
+.modal-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(26,22,18,0.72); z-index:200;
+  align-items:center; justify-content:center; padding:20px;
+}
+.modal-overlay.open { display:flex; }
+.modal {
+  background:var(--parchment); border-radius:12px;
+  width:100%; max-width:500px; max-height:88vh;
+  overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.4);
+  border:1px solid var(--gold);
+}
+.modal-header {
+  background:var(--ink); padding:18px 22px;
+  border-radius:12px 12px 0 0;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.modal-title { font-family:'Amiri',serif; font-size:1.25rem; color:var(--gold-light); }
+.modal-close { background:none; border:none; color:var(--muted); font-size:1.3rem; cursor:pointer; }
+.modal-close:hover { color:var(--parchment); }
+.modal-body { padding:20px; }
+.page-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:7px; margin-bottom:16px; }
+.page-btn {
+  padding:9px 5px; border-radius:6px; border:1px solid var(--border);
+  background:white; cursor:pointer; text-align:center;
+  transition:all 0.15s; font-family:'DM Mono',monospace; font-size:0.65rem;
+}
+.page-btn:hover { border-color:var(--gold); }
+.page-btn.pg-green { background:var(--green-light); border-color:var(--green); color:var(--green); }
+.page-btn.pg-amber { background:var(--amber-light); border-color:var(--amber); color:var(--amber); }
+.page-btn.pg-red { background:var(--red-light); border-color:var(--red); color:var(--red); }
+.page-btn.pg-familiar { background:var(--familiar-light); border-color:var(--familiar); color:var(--familiar); }
+.page-btn .pg-num { font-size:0.82rem; display:block; margin-bottom:1px; color:var(--ink); }
+.selected-page-info {
+  display:none; padding:10px 14px; background:var(--parchment);
+  border-radius:7px; margin-bottom:12px; font-size:0.85rem; color:var(--muted);
+}
+.status-btns { display:flex; gap:8px; flex-wrap:wrap; }
+.status-btn {
+  flex:1; min-width:80px; padding:9px;
+  border-radius:6px; border:2px solid transparent;
+  cursor:pointer; font-family:'DM Mono',monospace;
+  font-size:0.7rem; letter-spacing:0.04em; transition:all 0.15s;
+}
+.btn-green { background:var(--green-light); color:var(--green); border-color:var(--green); }
+.btn-green:hover { background:var(--green); color:white; }
+.btn-amber { background:var(--amber-light); color:var(--amber); border-color:var(--amber); }
+.btn-amber:hover { background:var(--amber); color:white; }
+.btn-red { background:var(--red-light); color:var(--red); border-color:var(--red); }
+.btn-red:hover { background:var(--red); color:white; }
+.btn-familiar { background:var(--familiar-light); color:var(--familiar); border-color:var(--familiar); }
+.btn-familiar:hover { background:var(--familiar); color:white; }
+
+/* LOG */
+.log-entry {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 16px; border-bottom:1px solid var(--border); font-size:0.85rem;
+}
+.log-date { font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--muted); }
+.log-minutes { font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--gold-dark); }
+
+/* INSTRUCTION BOX */
+.info-box {
+  border-radius:8px; padding:14px 18px; margin-bottom:16px;
+  font-size:0.92rem; line-height:1.7; color:var(--ink);
+  border-left:4px solid;
+}
+.info-box.gold { background:var(--amber-light); border-color:var(--gold); }
+.info-box.green { background:var(--green-light); border-color:var(--green); }
+.info-box.red { background:var(--red-light); border-color:var(--red); }
+.info-box.dark { background:#f0ede8; border-color:var(--ink); }
+.info-box strong { color:var(--gold-dark); }
+
+/* SAVING INDICATOR */
+.save-indicator {
+  position:fixed; bottom:20px; right:20px;
+  background:var(--green); color:white;
+  padding:8px 16px; border-radius:8px;
+  font-family:'DM Mono',monospace; font-size:0.72rem;
+  opacity:0; transition:opacity 0.3s; pointer-events:none;
+  z-index:500;
+}
+.save-indicator.show { opacity:1; }
+
+@media(max-width:600px){
+  .header { padding:14px 16px; flex-wrap:wrap; gap:10px; }
+  .stats-row { grid-template-columns:repeat(2,1fr); }
+  .nav { padding:0 12px; }
+  .main { padding:16px 12px; }
+  .position-tracker { flex-direction:column; align-items:flex-start; }
+}
+</style>
+</head>
+<body>
+
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-arabic">بِسْمِ اللَّهِ</div>
+  <div class="loading-text">Loading your Hifdh data...</div>
+</div>
+
+<div class="save-indicator" id="saveIndicator">✓ Saved to Google Sheets</div>
+
+<div class="header">
+  <div class="header-left">
+    <h1>🌙 Hifdh Coach</h1>
+    <div class="subtitle">Your Personal Quran Memorization Guide</div>
+  </div>
+  <div class="header-right">
+    <div class="streak-badge">
+      <div class="streak-number" id="streakNum">—</div>
+      <div class="streak-label">Day Streak</div>
+    </div>
+    <div class="clock">
+      <div id="clockDate">—</div>
+      <div class="time" id="clockTime">—</div>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showPage('today',this)">TODAY</button>
+  <button class="nav-btn" onclick="showPage('review',this)">REVIEW</button>
+  <button class="nav-btn" onclick="showPage('progress',this)">PROGRESS</button>
+  <button class="nav-btn" onclick="showPage('log',this)">LOG</button>
+  <button class="nav-btn" onclick="showPage('guide',this)">GUIDE</button>
+</div>
+
+<div class="main">
+
+  <!-- TODAY -->
+  <div class="page active" id="page-today">
+    <div class="today-highlight">
+      <div class="today-icon">📖</div>
+      <div class="today-text">
+        <h3 id="todayFocus">Loading...</h3>
+        <p id="todaySubfocus">Connecting to your data</p>
+      </div>
+    </div>
+
+    <div class="session-card">
+      <div class="session-header">
+        <h2>Today's Session</h2>
+        <div class="session-timer" id="timerDisplay">00:00</div>
+      </div>
+      <div class="session-body">
+
+        <div class="task-block" id="task1" onclick="toggleTask(1)">
+          <div class="task-num">1</div>
+          <div class="task-content">
+            <div class="task-title">🔁 Recall — Yesterday's Ayahs</div>
+            <div class="task-desc">Close mushaf. Recite yesterday's ayahs from pure memory. The struggle to recall is what locks it in long term.</div>
+          </div>
+          <div class="task-dur">10 min</div>
+          <div class="task-check" id="check1"></div>
+        </div>
+
+        <div class="task-block" id="task2" onclick="toggleTask(2)">
+          <div class="task-num">2</div>
+          <div class="task-content">
+            <div class="task-title">✨ New Memorization</div>
+            <div class="task-desc" id="newMemDesc">3 new ayahs. 50 repetitions each before moving on.</div>
+          </div>
+          <div class="task-dur">20 min</div>
+          <div class="task-check" id="check2"></div>
+        </div>
+
+        <!-- Position tracker -->
+        <div class="position-tracker">
+          <div class="position-info">
+            <div class="position-label">Current Position</div>
+            <div class="position-value" id="positionDisplay">Al-Baqarah — Page <span id="posPage">10</span>, Ayah <span id="posAyah">1</span></div>
+          </div>
+          <div class="position-inputs">
+            <input type="number" class="pos-input" id="inputPage" placeholder="Page" min="1" max="49">
+            <input type="number" class="pos-input" id="inputAyah" placeholder="Ayah" min="1" max="20">
+            <button class="save-pos-btn" onclick="savePosition()">SAVE</button>
+          </div>
+        </div>
+
+        <!-- Rep counter -->
+        <div class="rep-counter">
+          <button class="rep-btn" onclick="changeReps(-1)">−</button>
+          <div class="rep-count" id="repCount">0</div>
+          <div class="rep-label">
+            <div style="font-size:0.8rem;font-weight:600;color:var(--ink);">Repetition counter</div>
+            <div style="font-size:0.72rem;">Tap + for each full recitation of current ayah</div>
+          </div>
+          <button class="rep-btn" onclick="changeReps(1)">+</button>
+          <div class="rep-target" id="repTarget">/ 50</div>
+        </div>
+
+        <div class="task-block" id="task3" onclick="toggleTask(3)">
+          <div class="task-num">3</div>
+          <div class="task-content">
+            <div class="task-title">🔄 Review — Today's Pages</div>
+            <div class="task-desc" id="reviewDesc">Go to the REVIEW tab to see today's pages</div>
+          </div>
+          <div class="task-dur">15 min</div>
+          <div class="task-check" id="check3"></div>
+        </div>
+
+        <div class="task-block" id="task4" onclick="toggleTask(4)">
+          <div class="task-num">4</div>
+          <div class="task-content">
+            <div class="task-title">🎧 Listen</div>
+            <div class="task-desc">Eyes closed. Listen to a Sheikh recite today's new ayahs 1–2 times. Recommended: Sheikh Mishary Rashid Al-Afasy.</div>
+          </div>
+          <div class="task-dur">5 min</div>
+          <div class="task-check" id="check4"></div>
+        </div>
+
+        <button class="start-btn" id="startBtn" onclick="toggleSession()">▶ Start Session Timer</button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number" id="statGreen">—</div>
+        <div class="stat-label">🟢 Solid</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statAmber">—</div>
+        <div class="stat-label">🟡 Decent</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statRed">—</div>
+        <div class="stat-label">🔴 Needs Work</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statFamiliar">—</div>
+        <div class="stat-label">🔵 Familiar</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REVIEW -->
+  <div class="page" id="page-review">
+    <div class="section-title">Today's Review <span class="arabic">المراجعة</span></div>
+    <div class="info-box gold">
+      <strong>How to review:</strong> Close the mushaf. Recite the full page from memory. Then mark your honest assessment below. Be strict — a page is only Green if you can recite it perfectly with zero hesitation.
+    </div>
+    <div class="review-list" id="reviewList">
+      <div class="review-list-header">Pages Due for Review Today</div>
+      <div id="reviewItems"><div style="padding:16px;color:var(--muted);font-style:italic;font-size:0.9rem;">Loading review schedule...</div></div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="page" id="page-progress">
+    <div class="section-title">Progress <span class="arabic">التقدم</span></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Solid</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Decent</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Needs work</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--familiar)"></div>Familiar</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--border)"></div>Not started</div>
+    </div>
+    <div class="progress-grid" id="progressGrid"></div>
+  </div>
+
+  <!-- LOG -->
+  <div class="page" id="page-log">
+    <div class="section-title">Session History</div>
+    <div style="background:white;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <div class="log-entry" style="background:var(--parchment);font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);">
+        <span>DATE</span><span>TASKS</span><span>DURATION</span>
+      </div>
+      <div id="logEntries"><div style="padding:16px;color:var(--muted);font-style:italic;font-size:0.9rem;">No sessions yet. Complete your first session to start tracking.</div></div>
+    </div>
+  </div>
+
+  <!-- GUIDE -->
+  <div class="page" id="page-guide">
+    <div class="section-title">Your Hifdh System <span class="arabic">منهج الحفظ</span></div>
+
+    <div class="info-box gold">
+      <strong>The Core Rule:</strong> Never move to a new ayah until the current one is completely locked. Minimum <strong>50 repetitions</strong> from memory before moving on. This is what actually works.
+    </div>
+
+    <div class="session-card" style="margin-bottom:18px;">
+      <div class="session-header"><h2>Daily Session — 40 Minutes</h2></div>
+      <div class="session-body">
+        <div class="task-block" style="cursor:default;">
+          <div class="task-num">1</div>
+          <div class="task-content">
+            <div class="task-title">Recall — No Mushaf (10 min)</div>
+            <div class="task-desc">Recite yesterday's ayahs from pure memory. Never look first. The struggle to recall is what builds the neural pathway. Fail, look once, try again without looking.</div>
+          </div>
+          <div class="task-dur">10 min</div>
+        </div>
+        <div class="task-block" style="cursor:default;">
+          <div class="task-num">2</div>
+          <div class="task-content">
+            <div class="task-title">New Memorization (20 min)</div>
+            <div class="task-desc">3 ayahs on normal days, up to 5 on strong days. Read one ayah several times looking. Close mushaf. Attempt from memory. 50 total attempts before moving to next ayah. Update your position after each session.</div>
+          </div>
+          <div class="task-dur">20 min</div>
+        </div>
+        <div class="task-block" style="cursor:default;">
+          <div class="task-num">3</div>
+          <div class="task-content">
+            <div class="task-title">Review Rotation (15 min)</div>
+            <div class="task-desc">Red pages every day. Amber pages weekly. Green pages monthly. The app calculates which pages need attention today. Go to the REVIEW tab. Recite each page from memory and mark honestly.</div>
+          </div>
+          <div class="task-dur">15 min</div>
+        </div>
+        <div class="task-block" style="cursor:default;">
+          <div class="task-num">4</div>
+          <div class="task-content">
+            <div class="task-title">Listening (5 min)</div>
+            <div class="task-desc">Close your eyes. Listen to Sheikh Mishary or Sheikh Al-Husary recite today's new ayahs 1–2 times. Trains your ear to correct melody and pronunciation.</div>
+          </div>
+          <div class="task-dur">5 min</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box green">
+      <strong>Status Guide:</strong><br>
+      🟢 <strong>Solid</strong> — Full page, no mistakes, no hesitation. Review monthly.<br>
+      🟡 <strong>Decent</strong> — Mostly correct, minor hesitation. Review weekly.<br>
+      🔴 <strong>Needs Work</strong> — Gaps or uncertainty. Review every single day.<br>
+      🔵 <strong>Familiar</strong> — Know it by ear, never formally memorized (Al-Kahf).
+    </div>
+
+    <div class="info-box red">
+      <strong>The Non-Negotiable:</strong> Never miss a day. Even 10 minutes and one ayah. The streak is everything. Breaking consistency for 3 days costs more in review time than the days missed.
+    </div>
+
+    <div class="info-box dark">
+      <strong>Your Current Status:</strong><br>
+      ✅ Juz Amma — memorized, weekly review rotation<br>
+      🟡 Al-Hashr — memorized, needs focused review<br>
+      🔵 Al-Kahf — very familiar, formal memorization next after Baqarah<br>
+      🟡 Al-Baqarah pages 1–9 — memorized with minor mistakes, continuing from page 10
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Surah</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;font-family:'DM Mono',monospace;">
+        Tap a page → mark its status
+      </div>
+      <div class="page-grid" id="pageGrid"></div>
+      <div class="selected-page-info" id="selectedPageInfo">
+        Page <span id="selectedPageNum">—</span> selected — mark your honest assessment:
+      </div>
+      <div class="status-btns">
+        <button class="status-btn btn-green" onclick="setPageStatus('green')">🟢 Solid</button>
+        <button class="status-btn btn-amber" onclick="setPageStatus('amber')">🟡 Decent</button>
+        <button class="status-btn btn-red" onclick="setPageStatus('red')">🔴 Needs Work</button>
+        <button class="status-btn btn-familiar" onclick="setPageStatus('familiar')">🔵 Familiar</button>
+      </div>
+      <button style="width:100%;margin-top:10px;padding:9px;background:none;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);" onclick="closeModal()">DONE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbyZf3EgxatXeKJDRoghP_wq-Q3NSielGF61JUeF4bDxl6sdHu8lobU7sfd5KNVR3LWvtQ/exec';
+
+const SURAHS = [
+  { id:'baqarah', name:'Al-Baqarah', arabic:'البقرة', pages:49, note:'Primary focus — continue from current position' },
+  { id:'juzamma', name:"Juz' Amma", arabic:'جزء عمّ', pages:23, note:'Memorized — weekly review rotation' },
+  { id:'hashr', name:'Al-Hashr', arabic:'الحشر', pages:4, note:'Memorized — needs focused review' },
+  { id:'kahf', name:'Al-Kahf', arabic:'الكهف', pages:12, note:'Familiar by reading — formal memorization later' },
+];
+
+// ── STATE ──
+let appData = { pages:[], progress:[], config:{}, sessions:[] };
+let localTasks = JSON.parse(localStorage.getItem('hc_tasks')||'{"1":false,"2":false,"3":false,"4":false}');
+let localTaskDate = localStorage.getItem('hc_task_date')||'';
+let localReps = parseInt(localStorage.getItem('hc_reps')||'0');
+let timerInterval = null, timerSeconds = 0, timerRunning = false;
+let activeModal = null, selectedPage = null;
+
+// ── INIT ──
+async function init() {
+  updateClock();
+  setInterval(updateClock, 1000);
+  resetDailyTasks();
+  renderTasks();
+  renderRepCounter();
+  await loadData();
+  document.getElementById('loadingScreen').classList.add('hidden');
+}
+
+async function loadData() {
+  try {
+    const res = await fetch(`${API_URL}?action=getAll`);
+    const data = await res.json();
+    appData = data;
+    renderAll();
+  } catch(e) {
+    console.error('Load error:', e);
+    document.getElementById('todayFocus').textContent = 'Connection error — check internet';
+    document.getElementById('loadingScreen').classList.add('hidden');
+  }
+}
+
+function renderAll() {
+  renderStreak();
+  renderTodayFocus();
+  renderReviews();
+  renderProgress();
+  renderLog();
+  renderStats();
+}
+
+// ── API ──
+async function apiPost(payload) {
+  try {
+    await fetch(API_URL, {
+      method:'POST',
+      body: JSON.stringify(payload)
+    });
+    showSaved();
+  } catch(e) { console.error('Save error:', e); }
+}
+
+function showSaved() {
+  const el = document.getElementById('saveIndicator');
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ── CLOCK ──
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clockDate').textContent = now.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+  document.getElementById('clockTime').textContent = now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+function getTodayStr() { return new Date().toISOString().split('T')[0]; }
+
+// ── STREAK ──
+function renderStreak() {
+  const streak = appData.config.streak || 0;
+  document.getElementById('streakNum').textContent = streak;
+}
+
+// ── TODAY FOCUS ──
+function renderTodayFocus() {
+  const prog = appData.progress.find(p => p.surah_id === 'baqarah');
+  const page = prog ? prog.current_page : 10;
+  const ayah = prog ? prog.current_ayah : 1;
+
+  document.getElementById('posPage').textContent = page;
+  document.getElementById('posAyah').textContent = ayah;
+  document.getElementById('inputPage').value = page;
+  document.getElementById('inputAyah').value = ayah;
+  document.getElementById('todayFocus').textContent = `Al-Baqarah — Page ${page}, Ayah ${ayah}`;
+  document.getElementById('todaySubfocus').textContent = `New memorization target • 3 ayahs • 50 repetitions each`;
+  document.getElementById('newMemDesc').textContent = `Al-Baqarah page ${page} starting from ayah ${ayah} — 3 new ayahs, 50 repetitions each`;
+
+  // Reviews summary
+  const reviews = getTodaysReviews();
+  if (reviews.length > 0) {
+    document.getElementById('reviewDesc').textContent = reviews.slice(0,3).map(r=>`${r.surah_name} p.${r.page_number}`).join(' • ');
+  } else {
+    document.getElementById('reviewDesc').textContent = 'No pages due today — great consistency!';
+  }
+}
+
+// ── REVIEWS ──
+function getTodaysReviews() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  return appData.pages.filter(p => {
+    if (p.status === 'empty' || p.status === 'familiar') return false;
+    if (p.status === 'red') return true;
+    if (!p.next_review) return true;
+    const nr = new Date(p.next_review); nr.setHours(0,0,0,0);
+    return nr <= today;
+  });
+}
+
+function renderReviews() {
+  const reviews = getTodaysReviews();
+  const container = document.getElementById('reviewItems');
+
+  if (reviews.length === 0) {
+    container.innerHTML = '<div style="padding:16px;color:var(--muted);font-style:italic;font-size:0.9rem;">No pages due today — excellent work! Keep your streak going. 🟢</div>';
+    return;
+  }
+
+  container.innerHTML = reviews.map((r,i) => {
+    const color = r.status==='green'?'var(--green)':r.status==='amber'?'var(--amber)':'var(--red)';
+    return `
+      <div class="review-item" id="ri-${r.surah_id}-${r.page_number}">
+        <div class="review-dot" style="background:${color}"></div>
+        <div class="review-name">${r.surah_name}</div>
+        <div class="review-page">Page ${r.page_number}</div>
+        <div class="review-status-btns">
+          <button class="rsb rsb-green" onclick="markReview('${r.surah_id}',${r.page_number},'green')">🟢</button>
+          <button class="rsb rsb-amber" onclick="markReview('${r.surah_id}',${r.page_number},'amber')">🟡</button>
+          <button class="rsb rsb-red" onclick="markReview('${r.surah_id}',${r.page_number},'red')">🔴</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function markReview(surahId, pageNum, status) {
+  // Update local
+  const page = appData.pages.find(p => p.surah_id===surahId && p.page_number==pageNum);
+  if (page) {
+    page.status = status;
+    const today = new Date();
+    if (status==='red') today.setDate(today.getDate()+1);
+    else if (status==='amber') today.setDate(today.getDate()+7);
+    else if (status==='green') today.setDate(today.getDate()+30);
+    page.next_review = today.toISOString().split('T')[0];
+    page.last_reviewed = getTodayStr();
+  }
+
+  // Animate out
+  const el = document.getElementById(`ri-${surahId}-${pageNum}`);
+  if (el) { el.style.opacity='0.3'; el.style.transition='opacity 0.3s'; }
+
+  // Save to sheet
+  await apiPost({ action:'updatePage', surah_id:surahId, page_number:pageNum, status });
+
+  renderStats();
+  setTimeout(() => renderReviews(), 400);
+}
+
+// ── PROGRESS ──
+function renderProgress() {
+  const grid = document.getElementById('progressGrid');
+  grid.innerHTML = '';
+
+  SURAHS.forEach(surah => {
+    const pages = appData.pages.filter(p => p.surah_id === surah.id);
+    let green=0,amber=0,red=0,familiar=0,empty=0;
+    pages.forEach(p => {
+      if(p.status==='green') green++;
+      else if(p.status==='amber') amber++;
+      else if(p.status==='red') red++;
+      else if(p.status==='familiar') familiar++;
+      else empty++;
+    });
+    const memorized = green+amber+red;
+    const pct = pages.length ? Math.round(memorized/pages.length*100) : 0;
+
+    const dots = pages.map(p => {
+      const cls = p.status==='green'?'dot-green':p.status==='amber'?'dot-amber':p.status==='red'?'dot-red':p.status==='familiar'?'dot-familiar':'dot-empty';
+      return `<div class="dot ${cls}" title="Page ${p.page_number}: ${p.status}"></div>`;
+    }).join('');
+
+    const card = document.createElement('div');
+    card.className = 'surah-card';
+    card.onclick = () => openModal(surah);
+    card.innerHTML = `
+      <div class="surah-card-header">
+        <div class="surah-name">${surah.name}</div>
+        <div class="surah-arabic">${surah.arabic}</div>
+      </div>
+      <div class="surah-meta">${memorized}/${surah.pages} pages memorized • ${pct}%</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill fill-green" style="width:${Math.round(green/surah.pages*100)}%;background:var(--green)"></div>
+      </div>
+      <div style="font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:5px;">${surah.note}</div>
+      <div class="status-dots">${dots}</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ── STATS ──
+function renderStats() {
+  let green=0,amber=0,red=0,familiar=0;
+  appData.pages.forEach(p => {
+    if(p.status==='green') green++;
+    else if(p.status==='amber') amber++;
+    else if(p.status==='red') red++;
+    else if(p.status==='familiar') familiar++;
+  });
+  document.getElementById('statGreen').textContent = green;
+  document.getElementById('statAmber').textContent = amber;
+  document.getElementById('statRed').textContent = red;
+  document.getElementById('statFamiliar').textContent = familiar;
+}
+
+// ── LOG ──
+function renderLog() {
+  const container = document.getElementById('logEntries');
+  const sessions = appData.sessions || [];
+  if (sessions.length === 0) {
+    container.innerHTML = '<div style="padding:16px;color:var(--muted);font-style:italic;font-size:0.9rem;">No sessions yet. Complete your first session to start tracking.</div>';
+    return;
+  }
+  container.innerHTML = sessions.slice(0,30).map(s => `
+    <div class="log-entry">
+      <span class="log-date">${s.date}</span>
+      <span style="font-size:0.85rem;">${s.tasks_completed}/4 tasks</span>
+      <span class="log-minutes">${s.duration_minutes}m</span>
+    </div>
+  `).join('');
+}
+
+// ── MODAL ──
+function openModal(surah) {
+  activeModal = surah; selectedPage = null;
+  document.getElementById('modalTitle').textContent = `${surah.name} — ${surah.arabic}`;
+  const grid = document.getElementById('pageGrid');
+  grid.innerHTML = '';
+  const pages = appData.pages.filter(p => p.surah_id === surah.id);
+  pages.forEach(p => {
+    const cls = p.status==='green'?'pg-green':p.status==='amber'?'pg-amber':p.status==='red'?'pg-red':p.status==='familiar'?'pg-familiar':'';
+    const icon = p.status==='green'?'✓':p.status==='amber'?'~':p.status==='red'?'✗':p.status==='familiar'?'◎':'—';
+    const btn = document.createElement('button');
+    btn.className = `page-btn ${cls}`;
+    btn.id = `pgbtn-${p.page_number}`;
+    btn.innerHTML = `<span class="pg-num">${p.page_number}</span>${icon}`;
+    btn.onclick = () => selectModalPage(p.page_number);
+    grid.appendChild(btn);
+  });
+  document.getElementById('selectedPageInfo').style.display='none';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function selectModalPage(n) {
+  selectedPage = n;
+  document.getElementById('selectedPageNum').textContent = n;
+  document.getElementById('selectedPageInfo').style.display='block';
+  document.querySelectorAll('.page-btn').forEach(b => b.style.outline='none');
+  const btn = document.getElementById(`pgbtn-${n}`);
+  if(btn) btn.style.outline='2px solid var(--gold)';
+}
+
+async function setPageStatus(status) {
+  if (!activeModal || !selectedPage) return;
+  const page = appData.pages.find(p => p.surah_id===activeModal.id && p.page_number==selectedPage);
+  if (page) {
+    page.status = status;
+    const today = new Date();
+    if(status==='red') today.setDate(today.getDate()+1);
+    else if(status==='amber') today.setDate(today.getDate()+7);
+    else if(status==='green') today.setDate(today.getDate()+30);
+    page.next_review = today.toISOString().split('T')[0];
+  }
+  const btn = document.getElementById(`pgbtn-${selectedPage}`);
+  if (btn) {
+    const icon = status==='green'?'✓':status==='amber'?'~':status==='red'?'✗':'◎';
+    btn.className = `page-btn pg-${status}`;
+    btn.innerHTML = `<span class="pg-num">${selectedPage}</span>${icon}`;
+  }
+  await apiPost({ action:'updatePage', surah_id:activeModal.id, page_number:selectedPage, status });
+  renderStats();
+  renderProgress();
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+function closeModalOutside(e) {
+  if(e.target===document.getElementById('modalOverlay')) closeModal();
+}
+
+// ── POSITION ──
+async function savePosition() {
+  const page = parseInt(document.getElementById('inputPage').value);
+  const ayah = parseInt(document.getElementById('inputAyah').value);
+  if (!page || !ayah) return;
+
+  document.getElementById('posPage').textContent = page;
+  document.getElementById('posAyah').textContent = ayah;
+  document.getElementById('todayFocus').textContent = `Al-Baqarah — Page ${page}, Ayah ${ayah}`;
+  document.getElementById('newMemDesc').textContent = `Al-Baqarah page ${page} starting from ayah ${ayah} — 3 new ayahs, 50 repetitions each`;
+
+  const prog = appData.progress.find(p=>p.surah_id==='baqarah');
+  if(prog) { prog.current_page=page; prog.current_ayah=ayah; }
+
+  await apiPost({ action:'updateProgress', surah_id:'baqarah', current_page:page, current_ayah:ayah });
+}
+
+// ── TASKS ──
+function resetDailyTasks() {
+  const today = getTodayStr();
+  if (localTaskDate !== today) {
+    localTasks = {1:false,2:false,3:false,4:false};
+    localReps = 0;
+    localTaskDate = today;
+    localStorage.setItem('hc_tasks', JSON.stringify(localTasks));
+    localStorage.setItem('hc_task_date', today);
+    localStorage.setItem('hc_reps', '0');
+  }
+}
+
+function toggleTask(n) {
+  localTasks[n] = !localTasks[n];
+  localStorage.setItem('hc_tasks', JSON.stringify(localTasks));
+  renderTasks();
+}
+
+function renderTasks() {
+  for(let i=1;i<=4;i++){
+    const block = document.getElementById(`task${i}`);
+    const check = document.getElementById(`check${i}`);
+    if(localTasks[i]) {
+      block.classList.add('completed');
+      check.innerHTML = '<span style="color:white;font-size:0.75rem;">✓</span>';
+    } else {
+      block.classList.remove('completed');
+      check.innerHTML = '';
+    }
+  }
+}
+
+// ── REPS ──
+function changeReps(delta) {
+  localReps = Math.max(0, localReps + delta);
+  localStorage.setItem('hc_reps', localReps);
+  renderRepCounter();
+}
+
+function renderRepCounter() {
+  const el = document.getElementById('repCount');
+  const target = document.getElementById('repTarget');
+  el.textContent = localReps;
+  const pct = Math.min(localReps/50,1);
+  el.style.color = pct>=1?'var(--green)':pct>=0.6?'var(--amber)':'var(--ink)';
+  target.textContent = `/ 50${pct>=1?' ✓':''}`;
+}
+
+// ── TIMER ──
+function toggleSession() {
+  if (!timerRunning) {
+    timerRunning = true;
+    timerInterval = setInterval(()=>{ timerSeconds++; updateTimerDisplay(); }, 1000);
+    document.getElementById('startBtn').textContent = '⏹ Stop & Save Session';
+    document.getElementById('startBtn').classList.add('active');
+  } else {
+    timerRunning = false;
+    clearInterval(timerInterval);
+    document.getElementById('startBtn').textContent = '▶ Start Session Timer';
+    document.getElementById('startBtn').classList.remove('active');
+    saveSession();
+  }
+}
+
+async function saveSession() {
+  const completed = Object.values(localTasks).filter(Boolean).length;
+  const minutes = Math.round(timerSeconds/60);
+  if (minutes < 1 && completed === 0) return;
+
+  const entry = { date:getTodayStr(), tasks_completed:completed, duration_minutes:minutes, notes:'' };
+  appData.sessions.unshift(entry);
+
+  await apiPost({ action:'logSession', tasks_completed:completed, duration_minutes:minutes });
+
+  // Reload to get updated streak
+  setTimeout(async()=>{
+    await loadData();
+  }, 1000);
+
+  timerSeconds = 0;
+  updateTimerDisplay();
+  renderLog();
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerSeconds/60).toString().padStart(2,'0');
+  const s = (timerSeconds%60).toString().padStart(2,'0');
+  document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+}
+
+// ── NAV ──
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(name==='progress') renderProgress();
+  if(name==='review') renderReviews();
+  if(name==='log') renderLog();
+}
+
+init();
+</script>
+</body>
+</html>
