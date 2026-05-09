@@ -566,7 +566,6 @@ function getTodaysReviews() {
   const today = new Date(); today.setHours(0,0,0,0);
   return appData.pages.filter(p => {
     if (p.status==='empty'||p.status==='familiar') return false;
-    if (p.status==='red') return true;
     if (!p.next_review) return true;
     const nr = new Date(p.next_review); nr.setHours(0,0,0,0);
     return nr <= today;
